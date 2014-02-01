@@ -1,0 +1,6 @@
+*.meta
+/Assets/TK2DROOT
+/Library/metadata
+/Library/ScriptAssemblies
+/Temp
+/Library/FailedAssetImports.txt
