@@ -1,9 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\ScreenInput.cs">
     <Files>
-      <File FileName="Assets\Filler.cs" Line="56" Column="5" />
-      <File FileName="Assets\ScreenInput.cs" Line="48" Column="6" />
+      <File FileName="Assets\ScreenInput.cs" Line="55" Column="6" />
+      <File FileName="Assets\ScreenInput.cs" Line="13" Column="16" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

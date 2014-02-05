@@ -3,11 +3,8 @@ using System.Collections;
 
 public class ScreenInput : MonoBehaviour {
 
-	bool moving = false;
-	GameObject TouchedObject;
 	public float lastShotTime;
-	public GameObject prefabBorder;
-	private GameObject Border;
+	bool moving = false;
 
 	// Update is called once per frame
 	void Update () {
@@ -21,17 +18,18 @@ public class ScreenInput : MonoBehaviour {
 				moving = Physics.Raycast (ray, out hit, 1000);
 				if(moving)
 				{
-					TouchedObject = hit.transform.gameObject;
-					Debug.Log("Touch Detected on : " + TouchedObject.name);
+					GetComponent<JewelData>().SelectTile( hit.transform.gameObject);
+					//Debug.Log("Touch Detected on : " + TouchedObject.name);
 				}
 				
 			}
-			// release touch/dragging
+
+			/*// release touch/dragging
 			if((Input.GetTouch(0).phase == TouchPhase.Ended || Input.GetTouch(0).phase == TouchPhase.Canceled) && TouchedObject != null)
 			{
 				moving = false;
 				Debug.Log("Touch Released from : " + TouchedObject.name);
-			}
+			}*/
 		}
 		//mouse input
 		if (Input.GetKey(KeyCode.Mouse0))
@@ -42,10 +40,8 @@ public class ScreenInput : MonoBehaviour {
 				RaycastHit hit = new RaycastHit();
 				if(Physics.Raycast(ray, out hit))
 				{
-					TouchedObject = hit.transform.gameObject;
-					Debug.Log("Mouse Click Detected on : " + TouchedObject.name);
-					if (Border != null) Destroy(Border);
-					Border = Instantiate(prefabBorder, TouchedObject.transform.position, TouchedObject.transform.rotation) as GameObject;
+					GetComponent<JewelData>().SelectTile( hit.transform.gameObject);
+					//Debug.Log("Mouse Click Detected");// on : " + TouchedObject.name);
 				}
 				lastShotTime = Time.time;
 			}
