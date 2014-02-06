@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 public class JewelData : MonoBehaviour {
 
@@ -24,11 +25,6 @@ public class JewelData : MonoBehaviour {
 		IsFirstJewelInPair = true;
 		CreateJewels();
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 
 	void CreateJewels()
 	{
@@ -37,7 +33,6 @@ public class JewelData : MonoBehaviour {
 			for (int j = 0; j < spritesJewels.GetLength(1); j++)
 			{
 				spritesJewels[i,j] = Instantiate(prefabJewel, tilemap.GetTilePosition(i,j)+ tilesize*0.5f, transform.rotation) as GameObject;//as tk2dSprite;
-				//Debug.Log(spritesJewels[i,j].GetComponent<tk2dSprite>().spriteId);
 			}
 		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
 		System.Random random = new System.Random();
@@ -50,10 +45,9 @@ public class JewelData : MonoBehaviour {
 				{
 					do
 					{
-						NewSpriteID = random.Next(0, SpritesCount);
+						spritesJewels[i,j].GetComponent<tk2dSprite>().SetSprite(random.Next(0, SpritesCount));
 					}
-					while (IsMatch3(i, j, NewSpriteID));
-					spritesJewels[i,j].GetComponent<tk2dSprite>().SetSprite(NewSpriteID);
+					while (IsMatch3(i, j));
 				}
 		}
 		while (!IsAnywherePotentialMatch3());
@@ -70,7 +64,6 @@ public class JewelData : MonoBehaviour {
 					{
 						SelectedSpriteIndexX = i;
 						SelectedSpriteIndexY = j;
-						//Debug.Log("Sprite #: "+ i + "," + j);
 						i = spritesJewels.GetLength(0);
 						break;
 					}
@@ -83,11 +76,7 @@ public class JewelData : MonoBehaviour {
 			else
 			{
 				if (IsNeighbors(SelectedSpriteIndexX, SelectedSpriteIndexY))
-				{
 					StartCoroutine(SwapJewels(SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX,PreviousSpriteIndexY));
-				}
-				//else
-					//Debug.Log("Not Neighbors!");
 			}
 			IsFirstJewelInPair = !IsFirstJewelInPair;
 			PreviousSpriteIndexX = SelectedSpriteIndexX;
@@ -101,8 +90,9 @@ public class JewelData : MonoBehaviour {
 				(((CurrentIndexY - PreviousSpriteIndexY == 1)||(CurrentIndexY - PreviousSpriteIndexY == -1))&&(CurrentIndexX - PreviousSpriteIndexX == 0)));
 	}
 
-	bool IsMatch3(int X, int Y, int SpriteID)
+	bool IsMatch3(int X, int Y)
 	{
+		int SpriteID = spritesJewels[X,Y].GetComponent<tk2dSprite>().spriteId;
 		if (X>=2)
 			if ((spritesJewels[X-1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
         	    (spritesJewels[X-2,Y].GetComponent<tk2dSprite>().spriteId == SpriteID))
@@ -183,6 +173,46 @@ public class JewelData : MonoBehaviour {
 		return false;
 	}
 
+	List<int[]> GetMatchedJewels(int x, int y)
+	{
+		int SpriteID = spritesJewels[x,y].GetComponent<tk2dSprite>().spriteId;
+		List<int[]> matchedCoords = new List<int[]>();
+		List<int[]> temp = new List<int[]>();
+		temp.Add(new int[2]{x,y});
+		for (int i = x+1; i < spritesJewels.GetLength(0); i++)
+			if (spritesJewels[i,y].GetComponent<tk2dSprite>().spriteId==SpriteID)
+				temp.Add(new int[2]{i,y});
+			else
+				break;
+		for (int i = x-1; i >= 0; i--)
+			if (spritesJewels[i,y].GetComponent<tk2dSprite>().spriteId==SpriteID)
+				temp.Add(new int[2]{i,y});
+			else
+				break;
+
+		if (temp.Count >= 3)
+			matchedCoords.AddRange(temp);
+		temp.Clear();
+
+		for (int j = y+1; j < spritesJewels.GetLength(1); j++)
+			if (spritesJewels[x,j].GetComponent<tk2dSprite>().spriteId==SpriteID)
+				temp.Add(new int[2]{x,j});
+			else
+				break;
+		for (int j = y-1; j >= 0; j--)
+			if (spritesJewels[x,j].GetComponent<tk2dSprite>().spriteId==SpriteID)
+				temp.Add(new int[2]{x,j});
+			else
+				break;
+		if (temp.Count >= 2)
+		{
+			if (matchedCoords.Count == 0)
+				temp.Add(new int[2]{x,y});
+			matchedCoords.AddRange(temp);
+		}
+		return matchedCoords;
+	}
+
 
 	IEnumerator SwapJewels(int x1, int y1, int x2, int y2)
 	{
@@ -205,5 +235,14 @@ public class JewelData : MonoBehaviour {
 		GameObject tmp = spritesJewels[x1,y1];
 		spritesJewels[x1,y1] = spritesJewels[x2,y2];
 		spritesJewels[x2,y2] = tmp;
+
+		List<int[]> MatchedJewelCoords = new List<int[]>();
+		if (IsMatch3(x1, y1))
+			MatchedJewelCoords.AddRange(GetMatchedJewels(x1, y1));
+		if (IsMatch3(x2, y2))
+			MatchedJewelCoords.AddRange(GetMatchedJewels(x2, y2));
+		if (MatchedJewelCoords.Count > 0)
+			foreach (int[] coords in MatchedJewelCoords)
+				Destroy(spritesJewels[coords[0],coords[1]]);
 	}
 }
