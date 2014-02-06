@@ -12,7 +12,6 @@ public class JewelData : MonoBehaviour {
 	private GameObject[,] spritesJewels;
 	private GameObject Border;
 
-
 	int SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX, PreviousSpriteIndexY;
 	bool IsFirstJewelInPair;
 
@@ -44,16 +43,20 @@ public class JewelData : MonoBehaviour {
 		System.Random random = new System.Random();
 		int NewSpriteID;
 
-		for (int i = 0; i < spritesJewels.GetLength(0); i++)
-			for (int j = 0; j < spritesJewels.GetLength(1); j++)
-			{
-				do
+		do 
+		{
+			for (int i = 0; i < spritesJewels.GetLength(0); i++)
+				for (int j = 0; j < spritesJewels.GetLength(1); j++)
 				{
-					NewSpriteID = random.Next(0, SpritesCount);
+					do
+					{
+						NewSpriteID = random.Next(0, SpritesCount);
+					}
+					while (IsMatch3(i, j, NewSpriteID));
+					spritesJewels[i,j].GetComponent<tk2dSprite>().SetSprite(NewSpriteID);
 				}
-				while (IsMatch3(i, j, NewSpriteID));
-				spritesJewels[i,j].GetComponent<tk2dSprite>().SetSprite(NewSpriteID);
-			}
+		}
+		while (!IsAnywherePotentialMatch3());
 	}
 
 	public void SelectTile(GameObject go)
@@ -81,15 +84,7 @@ public class JewelData : MonoBehaviour {
 			{
 				if (IsNeighbors(SelectedSpriteIndexX, SelectedSpriteIndexY))
 				{
-					//Debug.Log("Neighbors!");
-					//Vector3 position1 = spritesJewels[PreviousSpriteIndexX,PreviousSpriteIndexY].transform.position;
-					//Vector3 position2 = spritesJewels[SelectedSpriteIndexX,SelectedSpriteIndexY].transform.position;
-					//StartCoroutine(MoveObjectToDestination(spritesJewels[SelectedSpriteIndexX,SelectedSpriteIndexY],position1));
-					//StartCoroutine(MoveObjectToDestination(spritesJewels[PreviousSpriteIndexX,PreviousSpriteIndexY],position2));
 					StartCoroutine(SwapJewels(SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX,PreviousSpriteIndexY));
-					//GameObject tmp = spritesJewels[PreviousSpriteIndexX,PreviousSpriteIndexY];
-					//spritesJewels[PreviousSpriteIndexX,PreviousSpriteIndexY] = spritesJewels[SelectedSpriteIndexX,SelectedSpriteIndexY];
-					//spritesJewels[SelectedSpriteIndexX,SelectedSpriteIndexY] = tmp;
 				}
 				//else
 					//Debug.Log("Not Neighbors!");
@@ -108,22 +103,84 @@ public class JewelData : MonoBehaviour {
 
 	bool IsMatch3(int X, int Y, int SpriteID)
 	{
-		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
-		bool result = false;
-		if (X>=2) result				= result || ((spritesJewels[X-1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID)||
-		                                        	 (spritesJewels[X-2,Y].GetComponent<tk2dSprite>().spriteId == SpriteID));
-		if (X<SpritesCount-2) result 	= result || ((spritesJewels[X+1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID)||
-		                                             (spritesJewels[X+2,Y].GetComponent<tk2dSprite>().spriteId == SpriteID));
-		if (Y>=2) result 			   	= result || ((spritesJewels[X,Y-1].GetComponent<tk2dSprite>().spriteId == SpriteID)||
-		                                        	 (spritesJewels[X,Y-2].GetComponent<tk2dSprite>().spriteId == SpriteID));
-		if (Y<SpritesCount-2) result 	= result || ((spritesJewels[X,Y+1].GetComponent<tk2dSprite>().spriteId == SpriteID)||
-	                                              	 (spritesJewels[X,Y+2].GetComponent<tk2dSprite>().spriteId == SpriteID));
-		return result;
+		if (X>=2)
+			if ((spritesJewels[X-1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
+        	    (spritesJewels[X-2,Y].GetComponent<tk2dSprite>().spriteId == SpriteID))
+				return true;
+		if (X<spritesJewels.GetLength(0)-2)
+			if((spritesJewels[X+1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
+               (spritesJewels[X+2,Y].GetComponent<tk2dSprite>().spriteId == SpriteID))
+				return true;
+		if (Y>=2)
+			if ((spritesJewels[X,Y-1].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
+        	 	(spritesJewels[X,Y-2].GetComponent<tk2dSprite>().spriteId == SpriteID))
+				return true;
+		if (Y<spritesJewels.GetLength(1)-2)
+			if ((spritesJewels[X,Y+1].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
+      	 		(spritesJewels[X,Y+2].GetComponent<tk2dSprite>().spriteId == SpriteID))
+				return true;
+		if ((X>0)&&(X<spritesJewels.GetLength(0)-1))
+		    if ((spritesJewels[X-1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
+		    	(spritesJewels[X+1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID))
+		    	return true;
+		if ((Y>0)&&(Y<spritesJewels.GetLength(1)-1))
+			if ((spritesJewels[X,Y-1].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
+			    (spritesJewels[X,Y+1].GetComponent<tk2dSprite>().spriteId == SpriteID))
+				return true;
+		return false;
 	}
 
 	bool IsAnywherePotentialMatch3()
 	{
-
+		int CurrentSpriteId;
+		for (int i = 0; i < spritesJewels.GetLength(0); i++)
+			for (int j = 0; j < spritesJewels.GetLength(1); j++)
+			{
+				CurrentSpriteId = spritesJewels[i,j].GetComponent<tk2dSprite>().spriteId;
+				if ((i > 0)&&(i < spritesJewels.GetLength(0) - 1))
+				{
+					if ( CurrentSpriteId == spritesJewels[i-1,j].GetComponent<tk2dSprite>().spriteId)
+					{
+						if (j > 0)
+							if (CurrentSpriteId == spritesJewels[i+1,j-1].GetComponent<tk2dSprite>().spriteId)
+								return true;
+						if (j < spritesJewels.GetLength(1) - 1)
+							if (CurrentSpriteId == spritesJewels[i+1,j+1].GetComponent<tk2dSprite>().spriteId)
+								return true;
+					}
+					if (CurrentSpriteId == spritesJewels[i+1,j].GetComponent<tk2dSprite>().spriteId)
+					{
+						if (j > 0)
+							if (CurrentSpriteId == spritesJewels[i-1,j-1].GetComponent<tk2dSprite>().spriteId)
+								return true;
+						if (j < spritesJewels.GetLength(1) - 1)
+							if (CurrentSpriteId == spritesJewels[i-1,j+1].GetComponent<tk2dSprite>().spriteId)
+								return true;
+					}
+				}
+				if ((j > 0)&&(j < spritesJewels.GetLength(0) - 1))
+				{
+					if (CurrentSpriteId == spritesJewels[i,j-1].GetComponent<tk2dSprite>().spriteId)
+					{
+						if (i > 0)
+							if (CurrentSpriteId == spritesJewels[i-1,j+1].GetComponent<tk2dSprite>().spriteId)
+								return true;
+						if (i < spritesJewels.GetLength(0) - 1)
+							if (CurrentSpriteId == spritesJewels[i+1,j+1].GetComponent<tk2dSprite>().spriteId)
+								return true;
+					}
+					if (CurrentSpriteId == spritesJewels[i,j+1].GetComponent<tk2dSprite>().spriteId)
+					{
+						if (i > 0)
+							if (CurrentSpriteId == spritesJewels[i-1,j-1].GetComponent<tk2dSprite>().spriteId)
+								return true;
+						if (i < spritesJewels.GetLength(0) - 1)
+							if (CurrentSpriteId == spritesJewels[i+1,j-1].GetComponent<tk2dSprite>().spriteId)
+								return true;
+					}
+				}
+			}
+		return false;
 	}
 
 
