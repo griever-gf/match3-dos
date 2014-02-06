@@ -12,8 +12,12 @@ public class JewelData : MonoBehaviour {
 	private GameObject[,] spritesJewels;
 	private GameObject Border;
 
-	int PreviousSpriteIndexX, PreviousSpriteIndexY;
+
+	int SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX, PreviousSpriteIndexY;
 	bool IsFirstJewelInPair;
+
+	const float MOVEMENT_DURATION = 1.0f;
+	const float MOVEMENT_SPEED = 2.0f;
 
 	// Use this for initialization
 	void Start () {
@@ -56,8 +60,7 @@ public class JewelData : MonoBehaviour {
 	{
 		if (go.name.Contains("prefabJewel"))
 		{
-			int SelectedSpriteIndexX = -10;
-			int SelectedSpriteIndexY = -10;
+			SelectedSpriteIndexX = SelectedSpriteIndexY = -10;
 			for (int i = 0; i < spritesJewels.GetLength(0); i++)
 				for (int j = 0; j < spritesJewels.GetLength(1); j++)
 					if (go.Equals(spritesJewels[i, j]))
@@ -78,10 +81,18 @@ public class JewelData : MonoBehaviour {
 			{
 				if (IsNeighbors(SelectedSpriteIndexX, SelectedSpriteIndexY))
 				{
-					Debug.Log("Neighbors!");
+					//Debug.Log("Neighbors!");
+					//Vector3 position1 = spritesJewels[PreviousSpriteIndexX,PreviousSpriteIndexY].transform.position;
+					//Vector3 position2 = spritesJewels[SelectedSpriteIndexX,SelectedSpriteIndexY].transform.position;
+					//StartCoroutine(MoveObjectToDestination(spritesJewels[SelectedSpriteIndexX,SelectedSpriteIndexY],position1));
+					//StartCoroutine(MoveObjectToDestination(spritesJewels[PreviousSpriteIndexX,PreviousSpriteIndexY],position2));
+					StartCoroutine(SwapJewels(SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX,PreviousSpriteIndexY));
+					//GameObject tmp = spritesJewels[PreviousSpriteIndexX,PreviousSpriteIndexY];
+					//spritesJewels[PreviousSpriteIndexX,PreviousSpriteIndexY] = spritesJewels[SelectedSpriteIndexX,SelectedSpriteIndexY];
+					//spritesJewels[SelectedSpriteIndexX,SelectedSpriteIndexY] = tmp;
 				}
-				else
-					Debug.Log("Not Neighbors!");
+				//else
+					//Debug.Log("Not Neighbors!");
 			}
 			IsFirstJewelInPair = !IsFirstJewelInPair;
 			PreviousSpriteIndexX = SelectedSpriteIndexX;
@@ -108,5 +119,34 @@ public class JewelData : MonoBehaviour {
 		if (Y<SpritesCount-2) result 	= result || ((spritesJewels[X,Y+1].GetComponent<tk2dSprite>().spriteId == SpriteID)||
 	                                              	 (spritesJewels[X,Y+2].GetComponent<tk2dSprite>().spriteId == SpriteID));
 		return result;
+	}
+
+	bool IsAnywherePotentialMatch3()
+	{
+
+	}
+
+
+	IEnumerator SwapJewels(int x1, int y1, int x2, int y2)
+	{
+		Vector3 position1 = spritesJewels[x1,y1].transform.position;
+		Vector3 position2 = spritesJewels[x2,y2].transform.position;
+		float elapsedTime = 0;
+
+		while (elapsedTime < MOVEMENT_DURATION)
+		{
+			spritesJewels[x1,y1].transform.position = Vector3.Lerp(position1, position2, elapsedTime);
+			spritesJewels[x2,y2].transform.position = Vector3.Lerp(position2, position1, elapsedTime);
+			elapsedTime += Time.deltaTime * MOVEMENT_SPEED;
+			//Debug.Log(elapsedTime);
+			yield return null;
+		}
+		
+		spritesJewels[x1,y1].transform.position = position2;
+		spritesJewels[x2,y2].transform.position = position1;
+
+		GameObject tmp = spritesJewels[x1,y1];
+		spritesJewels[x1,y1] = spritesJewels[x2,y2];
+		spritesJewels[x2,y2] = tmp;
 	}
 }
