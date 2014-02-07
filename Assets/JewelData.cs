@@ -33,7 +33,7 @@ public class JewelData : MonoBehaviour {
 		for (int i = 0; i < spritesJewels.GetLength(0); i++)
 			for (int j = 0; j < spritesJewels.GetLength(1); j++)
 			{
-				spritesJewels[i,j] = Instantiate(prefabJewel, tilemap.GetTilePosition(i,j)+ tilesize*0.5f, transform.rotation) as GameObject;//as tk2dSprite;
+				spritesJewels[i,j] = Instantiate(prefabJewel, tilemap.GetTilePosition(i,j)+ tilesize*0.5f, transform.rotation) as GameObject;
 			}
 		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
 		System.Random random = new System.Random();
@@ -240,27 +240,60 @@ public class JewelData : MonoBehaviour {
 		List<int> BrokenColumns = new List<int>();
 		List<int> BrokenColumnsShifts = new List<int>();
 		List<int[]> JewelsForShift = new List<int[]>();
+		List<int[]> JewelsForGenerate = new List<int[]>();
 		for (int i = 0; i < spritesJewels.GetLength(0); i++)
 			for (int j = 0; j < spritesJewels.GetLength(1); j++)
 				if (!BrokenColumns.Contains(i))
 					if (spritesJewels[i, j] == null)
 					{
 						BrokenColumns.Add(i);
-						BrokenColumnsShifts.Add(1);
-						for (int k = j+1; k < spritesJewels.GetLength(1); k++)
-							if (spritesJewels[i, k] != null)
-								JewelsForShift.Add(new int[2]{i, k});
-							else
-								BrokenColumnsShifts[BrokenColumnsShifts.Count-1]++;
+						BrokenColumnsShifts.Add(0);
+						int k;
+						for (k = j; k < spritesJewels.GetLength(1); k++)
+						{
+		                    if (spritesJewels[i, k] == null)
+			                    BrokenColumnsShifts[BrokenColumnsShifts.Count-1]++;
+							JewelsForShift.Add(new int[2]{i, k});
+						}
+						for (k = j; k < spritesJewels.GetLength(1)-BrokenColumnsShifts[BrokenColumnsShifts.Count-1]; k++)
+							spritesJewels[i, k] = spritesJewels[i, k+BrokenColumnsShifts[BrokenColumnsShifts.Count-1]];
+						for (k = spritesJewels.GetLength(1)-BrokenColumnsShifts[BrokenColumnsShifts.Count-1]; k < spritesJewels.GetLength(1); k++)
+						{
+							spritesJewels[i, k] = null;
+							JewelsForGenerate.Add(new int[2]{i, k});
+						}
 					}
 
 		Vector3 tilesize = tilemap.data.tileSize;
+		foreach (int[] coords in JewelsForGenerate)
+		{
+			spritesJewels[coords[0],coords[1]] = Instantiate(prefabJewel,
+			                                                 tilemap.GetTilePosition(coords[0],coords[1])+ tilesize*0.5f+
+			                                                 new Vector3(0,tilesize.y*BrokenColumnsShifts[BrokenColumns.IndexOf(coords[0])]),
+			                                                 transform.rotation) as GameObject;
+		}
+
+		System.Random random = new System.Random();
+		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
+		do
+		{
+			foreach (int[] coords in JewelsForGenerate)
+			{
+				do
+				{
+					spritesJewels[coords[0],coords[1]].GetComponent<tk2dSprite>().SetSprite(random.Next(0, SpritesCount));
+				}
+				while (IsMatch3(coords[0], coords[1]));
+			}
+		}
+		while (!IsAnywherePotentialMatch3());
+
 		List<Vector3> Positions = new List<Vector3>();
 		List<Vector3> Destinations = new List<Vector3>();
 		foreach (int[] coords in JewelsForShift)
 		{
 			Positions.Add(spritesJewels[coords[0],coords[1]].transform.position);
-			Destinations.Add(tilemap.GetTilePosition(coords[0],coords[1]-BrokenColumnsShifts[BrokenColumns.IndexOf(coords[0])])+ tilesize*0.5f);
+			Destinations.Add(tilemap.GetTilePosition(coords[0],coords[1]) + tilesize*0.5f);
 		}
 		float elapsedTime = 0;
 		while (elapsedTime < MOVEMENT_DURATION)
@@ -273,13 +306,6 @@ public class JewelData : MonoBehaviour {
 			elapsedTime += Time.deltaTime * MOVEMENT_SPEED;// / BrokenColumnsShifts.Max();
 			yield return null;
 		}
-		for (int i = 0; i < JewelsForShift.Count; i++)
-		{
-			spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]].transform.position = Destinations[i];
-			spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]-BrokenColumnsShifts[BrokenColumns.IndexOf(JewelsForShift[i][0])]] = spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]];
-			spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]] = null;
-		}
-
 	}
 
 	IEnumerator TryToMatch(int x1, int y1, int x2, int y2)
