@@ -76,7 +76,7 @@ public class JewelData : MonoBehaviour {
 			else
 			{
 				if (IsNeighbors(SelectedSpriteIndexX, SelectedSpriteIndexY))
-					StartCoroutine(SwapJewels(SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX,PreviousSpriteIndexY));
+					StartCoroutine(TryToMatch(SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX,PreviousSpriteIndexY));
 			}
 			IsFirstJewelInPair = !IsFirstJewelInPair;
 			PreviousSpriteIndexX = SelectedSpriteIndexX;
@@ -213,36 +213,43 @@ public class JewelData : MonoBehaviour {
 		return matchedCoords;
 	}
 
-
 	IEnumerator SwapJewels(int x1, int y1, int x2, int y2)
 	{
 		Vector3 position1 = spritesJewels[x1,y1].transform.position;
 		Vector3 position2 = spritesJewels[x2,y2].transform.position;
 		float elapsedTime = 0;
-
+		
 		while (elapsedTime < MOVEMENT_DURATION)
 		{
 			spritesJewels[x1,y1].transform.position = Vector3.Lerp(position1, position2, elapsedTime);
 			spritesJewels[x2,y2].transform.position = Vector3.Lerp(position2, position1, elapsedTime);
 			elapsedTime += Time.deltaTime * MOVEMENT_SPEED;
-			//Debug.Log(elapsedTime);
 			yield return null;
 		}
 		
 		spritesJewels[x1,y1].transform.position = position2;
 		spritesJewels[x2,y2].transform.position = position1;
-
+		
 		GameObject tmp = spritesJewels[x1,y1];
 		spritesJewels[x1,y1] = spritesJewels[x2,y2];
 		spritesJewels[x2,y2] = tmp;
+	}
 
+	IEnumerator TryToMatch(int x1, int y1, int x2, int y2)
+	{
+		yield return StartCoroutine(SwapJewels(x1, y1, x2, y2));
 		List<int[]> MatchedJewelCoords = new List<int[]>();
 		if (IsMatch3(x1, y1))
 			MatchedJewelCoords.AddRange(GetMatchedJewels(x1, y1));
 		if (IsMatch3(x2, y2))
 			MatchedJewelCoords.AddRange(GetMatchedJewels(x2, y2));
 		if (MatchedJewelCoords.Count > 0)
+		{
 			foreach (int[] coords in MatchedJewelCoords)
 				Destroy(spritesJewels[coords[0],coords[1]]);
+
+		}
+		else
+			yield return StartCoroutine(SwapJewels(x1, y1, x2, y2));
 	}
 }
