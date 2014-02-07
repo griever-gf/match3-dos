@@ -18,6 +18,10 @@ public class JewelData : MonoBehaviour {
 	bool IsFirstJewelInPair;
 	bool IsBusy;
 
+	public AudioClip clipMove;
+	public AudioClip clipMoveBack;
+	public AudioClip clipMatch;
+
 	const float MOVEMENT_DURATION = 1.0f;
 	const float MOVEMENT_SPEED = 2.0f;
 
@@ -181,11 +185,13 @@ public class JewelData : MonoBehaviour {
 	IEnumerator TryToMatch(int x1, int y1, int x2, int y2)
 	{
 		IsBusy = true;
+		audio.PlayOneShot(clipMove);
 		yield return StartCoroutine(SwapJewels(x1, y1, x2, y2));
 
 		if (!CheckForMatchesAndDestoryMatched())
 		{
 			IsBusy = true;
+			audio.PlayOneShot(clipMoveBack);
 			yield return StartCoroutine(SwapJewels(x1, y1, x2, y2));
 			IsBusy = false;
 		}
@@ -223,6 +229,7 @@ public class JewelData : MonoBehaviour {
 		if (MatchedJewelCoords.Count > 0)
 		{
 			MatchedJewelCoords = MatchedJewelCoords.Distinct().ToList(); //remove duplicates
+			audio.PlayOneShot(clipMatch);
 			foreach (int[] coords in MatchedJewelCoords)
 			{
 				Destroy(spritesJewels[coords[0],coords[1]]);
