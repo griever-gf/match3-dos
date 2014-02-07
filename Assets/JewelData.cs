@@ -274,7 +274,12 @@ public class JewelData : MonoBehaviour {
 			yield return null;
 		}
 		for (int i = 0; i < JewelsForShift.Count; i++)
+		{
 			spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]].transform.position = Destinations[i];
+			spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]-BrokenColumnsShifts[BrokenColumns.IndexOf(JewelsForShift[i][0])]] = spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]];
+			spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]] = null;
+		}
+
 	}
 
 	IEnumerator TryToMatch(int x1, int y1, int x2, int y2)
