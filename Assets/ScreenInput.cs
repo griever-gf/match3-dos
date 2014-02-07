@@ -33,7 +33,7 @@ public class ScreenInput : MonoBehaviour {
 		}
 		//mouse input
 		if (Input.GetKey(KeyCode.Mouse0))
-			if (Time.time > lastShotTime +1.0f)
+			if (Time.time > lastShotTime +0.5f)
 			{
 				//Debug.Log("LMB!");
 				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);

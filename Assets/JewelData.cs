@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class JewelData : MonoBehaviour {
 
@@ -269,7 +270,7 @@ public class JewelData : MonoBehaviour {
 				spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]].transform.position =
 					Vector3.Lerp(Positions[i], Destinations[i], elapsedTime);
 			}
-			elapsedTime += Time.deltaTime * MOVEMENT_SPEED;
+			elapsedTime += Time.deltaTime * MOVEMENT_SPEED;// / BrokenColumnsShifts.Max();
 			yield return null;
 		}
 		for (int i = 0; i < JewelsForShift.Count; i++)
