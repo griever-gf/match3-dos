@@ -238,7 +238,6 @@ public class JewelData : MonoBehaviour {
 	IEnumerator ShiftAndGenerateNewJewels()
 	{
 		List<int> BrokenColumns = new List<int>();
-		List<int> BrokenColumnsShifts = new List<int>();
 		List<int[]> JewelsForShift = new List<int[]>();
 		List<int[]> JewelsForGenerate = new List<int[]>();
 		for (int i = 0; i < spritesJewels.GetLength(0); i++)
@@ -247,32 +246,59 @@ public class JewelData : MonoBehaviour {
 					if (spritesJewels[i, j] == null)
 					{
 						BrokenColumns.Add(i);
-						BrokenColumnsShifts.Add(0);
+						int shift = 0;
+						int[] shifts = new int[spritesJewels.GetLength(1) - j];
 						int k;
+						bool IsGapChecked = false;
 						for (k = j; k < spritesJewels.GetLength(1); k++)
 						{
 		                    if (spritesJewels[i, k] == null)
-			                    BrokenColumnsShifts[BrokenColumnsShifts.Count-1]++;
-							JewelsForShift.Add(new int[2]{i, k});
+							{
+								if (!IsGapChecked)
+								{
+									int shift_gap = 1;
+									while (k+shift_gap < spritesJewels.GetLength(1))
+									{
+										if (spritesJewels[i, k+shift_gap] == null)
+											shift_gap++;
+										else
+											break;
+									}
+									shift += shift_gap;
+									IsGapChecked = true;
+								}
+							}
+							else
+								IsGapChecked = false;
+
+							JewelsForShift.Add(new int[3]{i, k, shift});
+							shifts[k-j] = shift;
 						}
-						for (k = j; k < spritesJewels.GetLength(1)-BrokenColumnsShifts[BrokenColumnsShifts.Count-1]; k++)
-							spritesJewels[i, k] = spritesJewels[i, k+BrokenColumnsShifts[BrokenColumnsShifts.Count-1]];
-						for (k = spritesJewels.GetLength(1)-BrokenColumnsShifts[BrokenColumnsShifts.Count-1]; k < spritesJewels.GetLength(1); k++)
+						int m = j;
+						for (k = j; k < spritesJewels.GetLength(1)-shift; k++)
+						{
+							do{
+								m++;
+							}while (spritesJewels[i, m]==null);
+							spritesJewels[i, k] = spritesJewels[i, m];
+						}
+
+						for (k = spritesJewels.GetLength(1)-shift; k < spritesJewels.GetLength(1); k++)
 						{
 							spritesJewels[i, k] = null;
-							JewelsForGenerate.Add(new int[2]{i, k});
+							JewelsForGenerate.Add(new int[3]{i, k, shift});
 						}
 					}
 
+		//new jewels generation
 		Vector3 tilesize = tilemap.data.tileSize;
 		foreach (int[] coords in JewelsForGenerate)
 		{
 			spritesJewels[coords[0],coords[1]] = Instantiate(prefabJewel,
 			                                                 tilemap.GetTilePosition(coords[0],coords[1])+ tilesize*0.5f+
-			                                                 new Vector3(0,tilesize.y*BrokenColumnsShifts[BrokenColumns.IndexOf(coords[0])]),
+			                                                 new Vector3(0,tilesize.y*coords[2]),
 			                                                 transform.rotation) as GameObject;
 		}
-
 		System.Random random = new System.Random();
 		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
 		do
@@ -288,6 +314,7 @@ public class JewelData : MonoBehaviour {
 		}
 		while (!IsAnywherePotentialMatch3());
 
+		//sprites movement
 		List<Vector3> Positions = new List<Vector3>();
 		List<Vector3> Destinations = new List<Vector3>();
 		foreach (int[] coords in JewelsForShift)
@@ -305,6 +332,23 @@ public class JewelData : MonoBehaviour {
 			}
 			elapsedTime += Time.deltaTime * MOVEMENT_SPEED;// / BrokenColumnsShifts.Max();
 			yield return null;
+		}
+
+		//checking for new matches
+		List<int[]> MatchedJewelCoords = new List<int[]>();
+		for (int i = 0; i < spritesJewels.GetLength(0); i++)
+			for (int j = 0; j < spritesJewels.GetLength(1); j++)
+				if (IsMatch3(i, j))
+					MatchedJewelCoords.AddRange(GetMatchedJewels(i, j));
+		if (MatchedJewelCoords.Count > 0)
+		{
+			MatchedJewelCoords = MatchedJewelCoords.Distinct().ToList(); //remove duplicates
+			foreach (int[] coords in MatchedJewelCoords)
+			{
+				Destroy(spritesJewels[coords[0],coords[1]]);
+				spritesJewels[coords[0],coords[1]] = null;
+			}
+			StartCoroutine(ShiftAndGenerateNewJewels());
 		}
 	}
 
