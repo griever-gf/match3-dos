@@ -4,7 +4,7 @@ using System.Collections;
 public class ScreenInput : MonoBehaviour {
 
 	public float lastShotTime;
-	bool moving = false;
+	//bool moving = false;
 
 	// Update is called once per frame
 	void Update () {
@@ -15,8 +15,9 @@ public class ScreenInput : MonoBehaviour {
 			{
 				Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
 				RaycastHit hit = new RaycastHit();
-				moving = Physics.Raycast (ray, out hit, 1000);
-				if(moving)
+				//moving = 
+				Physics.Raycast (ray, out hit);
+				//if(moving)
 				{
 					GetComponent<JewelData>().SelectTile( hit.transform.gameObject);
 					//Debug.Log("Touch Detected on : " + TouchedObject.name);
