@@ -34,53 +34,28 @@ public class JewelData : MonoBehaviour {
 	void CreateJewels() //initializing jewel field
 	{
 		Vector3 tilesize = tilemap.data.tileSize;
+		List<int[]> JewelsForGeneration = new List<int[]>();
 		for (int i = 0; i < spritesJewels.GetLength(0); i++)
 			for (int j = 0; j < spritesJewels.GetLength(1); j++)
 			{
 				spritesJewels[i,j] = Instantiate(prefabJewel, tilemap.GetTilePosition(i,j)+ tilesize*0.5f, transform.rotation) as GameObject;
+				JewelsForGeneration.Add(new int[]{i, j});
 			}
-		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
-		System.Random random = new System.Random();
-		do {
-			for (int i = 0; i < spritesJewels.GetLength(0); i++)
-				for (int j = 0; j < spritesJewels.GetLength(1); j++)
-				{
-					do {
-						spritesJewels[i,j].GetComponent<tk2dSprite>().SetSprite(random.Next(0, SpritesCount));
-					} while (IsMatch3(i, j));
-				}
-		} while (!IsAnywherePotentialMatch3());
+		FillRandomJewels(JewelsForGeneration);
 	}
 
-	public void SelectTile(GameObject go)
+	void FillRandomJewels(List<int[]> Jewels)
 	{
-		if (go.name.Contains("prefabJewel")&&(!IsBusy))
-		{
-			SelectedSpriteIndexX = SelectedSpriteIndexY = -10;
-			for (int i = 0; i < spritesJewels.GetLength(0); i++)
-				for (int j = 0; j < spritesJewels.GetLength(1); j++)
-					if (go.Equals(spritesJewels[i, j]))
-					{
-						SelectedSpriteIndexX = i;
-						SelectedSpriteIndexY = j;
-						i = spritesJewels.GetLength(0);
-						break;
-					}
-
-			if (Border != null) Destroy(Border);
-			if (IsFirstJewelInPair)
+		System.Random random = new System.Random();
+		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
+		do {
+			foreach (int[] coords in Jewels)
 			{
-				Border = Instantiate(prefabBorder, go.transform.position, go.transform.rotation) as GameObject;
+				do {
+					spritesJewels[coords[0],coords[1]].GetComponent<tk2dSprite>().SetSprite(random.Next(0, SpritesCount));
+				} while (IsMatch3(coords[0], coords[1]));
 			}
-			else
-			{
-				if (IsNeighbors(SelectedSpriteIndexX, SelectedSpriteIndexY))
-					StartCoroutine(TryToMatch(SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX,PreviousSpriteIndexY));
-			}
-			IsFirstJewelInPair = !IsFirstJewelInPair;
-			PreviousSpriteIndexX = SelectedSpriteIndexX;
-			PreviousSpriteIndexY = SelectedSpriteIndexY;
-		}
+		} while (!IsAnywherePotentialMatch3());
 	}
 
 	bool IsNeighbors(int CurrentIndexX, int CurrentIndexY)
@@ -119,7 +94,7 @@ public class JewelData : MonoBehaviour {
 		return false;
 	}
 	
-	bool IsAnywherePotentialMatch3() //check the entire field - is anywhere match is possible?
+	bool IsAnywherePotentialMatch3() //check the entire field - is somewhere possible match?
 	{
 		int CurrentSpriteId;
 		for (int i = 0; i < spritesJewels.GetLength(0); i++)
@@ -170,6 +145,37 @@ public class JewelData : MonoBehaviour {
 				}
 			}
 		return false;
+	}
+
+	public void SelectTile(GameObject go)
+	{
+		if (go.name.Contains("prefabJewel")&&(!IsBusy))
+		{
+			SelectedSpriteIndexX = SelectedSpriteIndexY = -10;
+			for (int i = 0; i < spritesJewels.GetLength(0); i++)
+				for (int j = 0; j < spritesJewels.GetLength(1); j++)
+					if (go.Equals(spritesJewels[i, j]))
+				{
+					SelectedSpriteIndexX = i;
+					SelectedSpriteIndexY = j;
+					i = spritesJewels.GetLength(0);
+					break;
+				}
+			
+			if (Border != null) Destroy(Border);
+			if (IsFirstJewelInPair)
+			{
+				Border = Instantiate(prefabBorder, go.transform.position, go.transform.rotation) as GameObject;
+			}
+			else
+			{
+				if (IsNeighbors(SelectedSpriteIndexX, SelectedSpriteIndexY))
+					StartCoroutine(TryToMatch(SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX,PreviousSpriteIndexY));
+			}
+			IsFirstJewelInPair = !IsFirstJewelInPair;
+			PreviousSpriteIndexX = SelectedSpriteIndexX;
+			PreviousSpriteIndexY = SelectedSpriteIndexY;
+		}
 	}
 	
 	IEnumerator TryToMatch(int x1, int y1, int x2, int y2) //execute the swap, then process if matches and swap back if not
@@ -314,21 +320,10 @@ public class JewelData : MonoBehaviour {
 		//new jewels generation
 		Vector3 tilesize = tilemap.data.tileSize;
 		foreach (int[] coords in JewelsForGenerate)
-		{
 			spritesJewels[coords[0],coords[1]] = Instantiate(prefabJewel,
 			                                                 tilemap.GetTilePosition(coords[0],coords[1])+ tilesize*0.5f+ new Vector3(0,tilesize.y*coords[2]),
 			                                                 transform.rotation) as GameObject;
-		}
-		System.Random random = new System.Random();
-		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
-		do {
-			foreach (int[] coords in JewelsForGenerate)
-			{
-				do {
-					spritesJewels[coords[0],coords[1]].GetComponent<tk2dSprite>().SetSprite(random.Next(0, SpritesCount));
-				} while (IsMatch3(coords[0], coords[1]));
-			}
-		} while (!IsAnywherePotentialMatch3());
+		FillRandomJewels(JewelsForGenerate);
 		
 		//sprites movement
 		List<Vector3> Goals = new List<Vector3>();
