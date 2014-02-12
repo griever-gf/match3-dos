@@ -192,27 +192,47 @@ public class JewelData : MonoBehaviour {
 
 	IEnumerator SwapJewels(int x1, int y1, int x2, int y2)
 	{
-		Vector3 position1 = spritesJewels[x1,y1].transform.position;
-		Vector3 position2 = spritesJewels[x2,y2].transform.position;
+		List<int[]> Jewels = new List<int[]>();
+		Jewels.Add(new int[]{x1, y1});
+		Jewels.Add(new int[]{x2, y2});
+		List<Vector3> Goals = new List<Vector3>();
+		Goals.Add(spritesJewels[x2,y2].transform.position);
+		Goals.Add(spritesJewels[x1,y1].transform.position);
+
+		yield return StartCoroutine(MoveJewels(Jewels, Goals));
+		
+		GameObject tmp = spritesJewels[x1,y1];
+		spritesJewels[x1,y1] = spritesJewels[x2,y2];
+		spritesJewels[x2,y2] = tmp;
+	}
+
+	IEnumerator MoveJewels(List<int[]> JewelsForMove, List<Vector3> Destinations)
+	{
+		List<Vector3> Positions = new List<Vector3>();
+		foreach (int[] coords in JewelsForMove)
+		{
+			Positions.Add(spritesJewels[coords[0],coords[1]].transform.position);
+		}
+
 		float movementFraction = 0;
 		float startTime = Time.time;
 		float currentTime = Time.time;
 		
 		while ((currentTime - startTime) < MOVEMENT_DURATION)
 		{
-			spritesJewels[x1,y1].transform.position = Vector3.Lerp(position1, position2, movementFraction);
-			spritesJewels[x2,y2].transform.position = Vector3.Lerp(position2, position1, movementFraction);
+			for (int i = 0; i < JewelsForMove.Count; i++)
+			{
+				spritesJewels[JewelsForMove[i][0],JewelsForMove[i][1]].transform.position =
+					Vector3.Lerp(Positions[i], Destinations[i], movementFraction);
+			}
 			currentTime = Time.time;
 			movementFraction = (currentTime - startTime) / MOVEMENT_DURATION;
 			yield return null;
 		}
-
-		spritesJewels[x1,y1].transform.position = position2;
-		spritesJewels[x2,y2].transform.position = position1;
 		
-		GameObject tmp = spritesJewels[x1,y1];
-		spritesJewels[x1,y1] = spritesJewels[x2,y2];
-		spritesJewels[x2,y2] = tmp;
+		for (int i = 0; i < JewelsForMove.Count; i++)
+			spritesJewels[JewelsForMove[i][0],JewelsForMove[i][1]].transform.position = Destinations[i];
+
 	}
 
 	bool CheckForMatchesAndDestroyIfMatch()
@@ -239,6 +259,7 @@ public class JewelData : MonoBehaviour {
 	
 	IEnumerator ShiftAndGenerateNewJewels() //shifting jewels after destroy by match, generating new ones, checking for match again
 	{
+		//shift jewels
 		List<int> BrokenColumns = new List<int>();
 		List<int[]> JewelsForShift = new List<int[]>();
 		List<int[]> JewelsForGenerate = new List<int[]>();
@@ -272,7 +293,7 @@ public class JewelData : MonoBehaviour {
 						else
 							IsGapChecked = false;
 						
-						JewelsForShift.Add(new int[3]{i, k, shift});
+						JewelsForShift.Add(new int[2]{i, k});
 					}
 					int m = j;
 					for (k = j; k < spritesJewels.GetLength(1)-shift; k++)
@@ -310,32 +331,12 @@ public class JewelData : MonoBehaviour {
 		} while (!IsAnywherePotentialMatch3());
 		
 		//sprites movement
-		List<Vector3> Positions = new List<Vector3>();
-		List<Vector3> Destinations = new List<Vector3>();
+		List<Vector3> Goals = new List<Vector3>();
 		foreach (int[] coords in JewelsForShift)
-		{
-			Positions.Add(spritesJewels[coords[0],coords[1]].transform.position);
-			Destinations.Add(tilemap.GetTilePosition(coords[0],coords[1]) + tilesize*0.5f);
-		}
-		float movementFraction = 0;
-		float startTime = Time.time;
-		float currentTime = Time.time;
-		
-		while ((currentTime - startTime) < MOVEMENT_DURATION)
-		{
-			for (int i = 0; i < JewelsForShift.Count; i++)
-			{
-				spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]].transform.position =
-					Vector3.Lerp(Positions[i], Destinations[i], movementFraction);
-			}
-			currentTime = Time.time;
-			movementFraction = (currentTime - startTime) / MOVEMENT_DURATION;
-			yield return null;
-		}
+			Goals.Add(tilemap.GetTilePosition(coords[0],coords[1]) + tilesize*0.5f);
+		yield return StartCoroutine(MoveJewels(JewelsForShift, Goals));
 
-		for (int i = 0; i < JewelsForShift.Count; i++)
-			spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]].transform.position = Destinations[i];
-
+		//recursive check after shift
 		if (CheckForMatchesAndDestroyIfMatch())
 			yield return(StartCoroutine(ShiftAndGenerateNewJewels()));
 	}
