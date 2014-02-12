@@ -149,7 +149,7 @@ public class JewelData : MonoBehaviour {
 
 	public void SelectTile(GameObject go)
 	{
-		if (go.name.Contains("prefabJewel")&&(!IsBusy))
+		if (!IsBusy)
 		{
 			SelectedSpriteIndexX = SelectedSpriteIndexY = -10;
 			for (int i = 0; i < spritesJewels.GetLength(0); i++)
