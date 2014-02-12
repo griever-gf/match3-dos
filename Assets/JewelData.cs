@@ -11,7 +11,7 @@ public class JewelData : MonoBehaviour {
 	public GameObject prefabJewel;
 	public GameObject prefabBorder;
 
-	private GameObject[,] spritesJewels;
+	public GameObject[,] spritesJewels;
 	private GameObject Border;
 
 	int SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX, PreviousSpriteIndexY;
@@ -24,10 +24,15 @@ public class JewelData : MonoBehaviour {
 
 	const float MOVEMENT_DURATION = 0.2f;
 
+	public bool[] BlockedRows, BlockedColumns, BlockedMovements;
+	
 	void Start () {
 		spritesJewels = new GameObject[tilemap.width, tilemap.height];
 		IsFirstJewelInPair = true;
 		IsBusy = false;
+		BlockedRows = new bool[spritesJewels.GetLength(0)];
+		BlockedColumns = new bool[spritesJewels.GetLength(1)];
+		BlockedMovements = new bool[4];
 		CreateJewels();
 	}
 	
@@ -155,12 +160,29 @@ public class JewelData : MonoBehaviour {
 			for (int i = 0; i < spritesJewels.GetLength(0); i++)
 				for (int j = 0; j < spritesJewels.GetLength(1); j++)
 					if (go.Equals(spritesJewels[i, j]))
-				{
-					SelectedSpriteIndexX = i;
-					SelectedSpriteIndexY = j;
-					i = spritesJewels.GetLength(0);
-					break;
-				}
+					{
+						if (BlockedColumns[i]||BlockedRows[j]) //checking for blocked rows / columns
+							return;
+						if (!IsFirstJewelInPair) //checking for blocked movements
+						{
+							if (BlockedMovements[0]) //if left is blocked
+								if ((i-PreviousSpriteIndexX==-1)&&(j==PreviousSpriteIndexY))
+							    	return;
+							if (BlockedMovements[1]) //if right is blocked
+								if ((i-PreviousSpriteIndexX==1)&&(j==PreviousSpriteIndexY))
+									return;
+							if (BlockedMovements[2]) //if up is blocked
+								if ((j-PreviousSpriteIndexY==1)&&(i==PreviousSpriteIndexX))
+									return;
+							if (BlockedMovements[3]) //if down is blocked
+								if ((j-PreviousSpriteIndexY==-1)&&(i==PreviousSpriteIndexX))
+									return;
+						}
+						SelectedSpriteIndexX = i;
+						SelectedSpriteIndexY = j;
+						i = spritesJewels.GetLength(0);
+						break;
+					}
 			
 			if (Border != null) Destroy(Border);
 			if (IsFirstJewelInPair)
