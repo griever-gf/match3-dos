@@ -22,19 +22,16 @@ public class JewelData : MonoBehaviour {
 	public AudioClip clipMoveBack;
 	public AudioClip clipMatch;
 
-	const float MOVEMENT_DURATION = 1.0f;
-	const float MOVEMENT_SPEED = 2.0f;
+	const float MOVEMENT_DURATION = 0.2f;
 
-	// Use this for initialization
 	void Start () {
 		spritesJewels = new GameObject[tilemap.width, tilemap.height];
 		IsFirstJewelInPair = true;
 		IsBusy = false;
 		CreateJewels();
 	}
-
-	//initializing jewel field
-	void CreateJewels()
+	
+	void CreateJewels() //initializing jewel field
 	{
 		Vector3 tilesize = tilemap.data.tileSize;
 		for (int i = 0; i < spritesJewels.GetLength(0); i++)
@@ -44,19 +41,15 @@ public class JewelData : MonoBehaviour {
 			}
 		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
 		System.Random random = new System.Random();
-		do 
-		{
+		do {
 			for (int i = 0; i < spritesJewels.GetLength(0); i++)
 				for (int j = 0; j < spritesJewels.GetLength(1); j++)
 				{
-					do
-					{
+					do {
 						spritesJewels[i,j].GetComponent<tk2dSprite>().SetSprite(random.Next(0, SpritesCount));
-					}
-					while (IsMatch3(i, j));
+					} while (IsMatch3(i, j));
 				}
-		}
-		while (!IsAnywherePotentialMatch3());
+		} while (!IsAnywherePotentialMatch3());
 	}
 
 	public void SelectTile(GameObject go)
@@ -73,7 +66,6 @@ public class JewelData : MonoBehaviour {
 						i = spritesJewels.GetLength(0);
 						break;
 					}
-			//Debug.Log ("Jewel coords: " + SelectedSpriteIndexX + ", " + SelectedSpriteIndexY);
 
 			if (Border != null) Destroy(Border);
 			if (IsFirstJewelInPair)
@@ -126,9 +118,8 @@ public class JewelData : MonoBehaviour {
 				return true;
 		return false;
 	}
-
-	//check the entire field - is anywhere match is possible? (after one swap)
-	bool IsAnywherePotentialMatch3()
+	
+	bool IsAnywherePotentialMatch3() //check the entire field - is anywhere match is possible?
 	{
 		int CurrentSpriteId;
 		for (int i = 0; i < spritesJewels.GetLength(0); i++)
@@ -180,37 +171,42 @@ public class JewelData : MonoBehaviour {
 			}
 		return false;
 	}
-
-	//execute the swap, then process if matches and swap back if not
-	IEnumerator TryToMatch(int x1, int y1, int x2, int y2)
+	
+	IEnumerator TryToMatch(int x1, int y1, int x2, int y2) //execute the swap, then process if matches and swap back if not
 	{
 		IsBusy = true;
 		audio.PlayOneShot(clipMove);
-		yield return StartCoroutine(SwapJewels(x1, y1, x2, y2));
+		yield return StartCoroutine(SwapJewels(x1, y1, x2, y2)); //wait unitil swap
 
-		if (!CheckForMatchesAndDestoryMatched())
+		if (CheckForMatchesAndDestroyIfMatch())
 		{
-			IsBusy = true;
-			audio.PlayOneShot(clipMoveBack);
-			yield return StartCoroutine(SwapJewels(x1, y1, x2, y2));
-			IsBusy = false;
+			yield return(StartCoroutine(ShiftAndGenerateNewJewels()));
 		}
+		else
+		{
+			audio.PlayOneShot(clipMoveBack);
+			yield return StartCoroutine(SwapJewels(x1, y1, x2, y2)); //swap back if no matches
+		}
+		IsBusy = false;
 	}
 
 	IEnumerator SwapJewels(int x1, int y1, int x2, int y2)
 	{
 		Vector3 position1 = spritesJewels[x1,y1].transform.position;
 		Vector3 position2 = spritesJewels[x2,y2].transform.position;
-		float elapsedTime = 0;
+		float movementFraction = 0;
+		float startTime = Time.time;
+		float currentTime = Time.time;
 		
-		while (elapsedTime < MOVEMENT_DURATION)
+		while ((currentTime - startTime) < MOVEMENT_DURATION)
 		{
-			spritesJewels[x1,y1].transform.position = Vector3.Lerp(position1, position2, elapsedTime);
-			spritesJewels[x2,y2].transform.position = Vector3.Lerp(position2, position1, elapsedTime);
-			elapsedTime += Time.deltaTime * MOVEMENT_SPEED;
+			spritesJewels[x1,y1].transform.position = Vector3.Lerp(position1, position2, movementFraction);
+			spritesJewels[x2,y2].transform.position = Vector3.Lerp(position2, position1, movementFraction);
+			currentTime = Time.time;
+			movementFraction = (currentTime - startTime) / MOVEMENT_DURATION;
 			yield return null;
 		}
-		
+
 		spritesJewels[x1,y1].transform.position = position2;
 		spritesJewels[x2,y2].transform.position = position1;
 		
@@ -219,7 +215,7 @@ public class JewelData : MonoBehaviour {
 		spritesJewels[x2,y2] = tmp;
 	}
 
-	bool CheckForMatchesAndDestoryMatched()
+	bool CheckForMatchesAndDestroyIfMatch()
 	{
 		List<int[]> MatchedJewelCoords = new List<int[]>();
 		for (int i = 0; i < spritesJewels.GetLength(0); i++)
@@ -235,18 +231,13 @@ public class JewelData : MonoBehaviour {
 				Destroy(spritesJewels[coords[0],coords[1]]);
 				spritesJewels[coords[0],coords[1]] = null;
 			}
-			StartCoroutine(ShiftAndGenerateNewJewels());
 			return true;
 		}
 		else
-		{
-			IsBusy = false;
 			return false;
-		}
 	}
-
-	//shifting jewels after destroy by match, generating new ones, checking for match again
-	IEnumerator ShiftAndGenerateNewJewels()
+	
+	IEnumerator ShiftAndGenerateNewJewels() //shifting jewels after destroy by match, generating new ones, checking for match again
 	{
 		List<int> BrokenColumns = new List<int>();
 		List<int[]> JewelsForShift = new List<int[]>();
@@ -304,24 +295,19 @@ public class JewelData : MonoBehaviour {
 		foreach (int[] coords in JewelsForGenerate)
 		{
 			spritesJewels[coords[0],coords[1]] = Instantiate(prefabJewel,
-			                                                 tilemap.GetTilePosition(coords[0],coords[1])+ tilesize*0.5f+
-			                                                 new Vector3(0,tilesize.y*coords[2]),
+			                                                 tilemap.GetTilePosition(coords[0],coords[1])+ tilesize*0.5f+ new Vector3(0,tilesize.y*coords[2]),
 			                                                 transform.rotation) as GameObject;
 		}
 		System.Random random = new System.Random();
 		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
-		do
-		{
+		do {
 			foreach (int[] coords in JewelsForGenerate)
 			{
-				do
-				{
+				do {
 					spritesJewels[coords[0],coords[1]].GetComponent<tk2dSprite>().SetSprite(random.Next(0, SpritesCount));
-				}
-				while (IsMatch3(coords[0], coords[1]));
+				} while (IsMatch3(coords[0], coords[1]));
 			}
-		}
-		while (!IsAnywherePotentialMatch3());
+		} while (!IsAnywherePotentialMatch3());
 		
 		//sprites movement
 		List<Vector3> Positions = new List<Vector3>();
@@ -331,23 +317,30 @@ public class JewelData : MonoBehaviour {
 			Positions.Add(spritesJewels[coords[0],coords[1]].transform.position);
 			Destinations.Add(tilemap.GetTilePosition(coords[0],coords[1]) + tilesize*0.5f);
 		}
-		float elapsedTime = 0;
-		while (elapsedTime < MOVEMENT_DURATION)
+		float movementFraction = 0;
+		float startTime = Time.time;
+		float currentTime = Time.time;
+		
+		while ((currentTime - startTime) < MOVEMENT_DURATION)
 		{
 			for (int i = 0; i < JewelsForShift.Count; i++)
 			{
 				spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]].transform.position =
-					Vector3.Lerp(Positions[i], Destinations[i], elapsedTime);
+					Vector3.Lerp(Positions[i], Destinations[i], movementFraction);
 			}
-			elapsedTime += Time.deltaTime * MOVEMENT_SPEED;// / BrokenColumnsShifts.Max();
+			currentTime = Time.time;
+			movementFraction = (currentTime - startTime) / MOVEMENT_DURATION;
 			yield return null;
 		}
-		
-		CheckForMatchesAndDestoryMatched();
-	}
 
-	//Get a list of jewels around a point what makes a match (3, at least)
-	List<int[]> GetMatchedJewels(int x, int y)
+		for (int i = 0; i < JewelsForShift.Count; i++)
+			spritesJewels[JewelsForShift[i][0],JewelsForShift[i][1]].transform.position = Destinations[i];
+
+		if (CheckForMatchesAndDestroyIfMatch())
+			yield return(StartCoroutine(ShiftAndGenerateNewJewels()));
+	}
+	
+	List<int[]> GetMatchedJewels(int x, int y) //Get a list of jewels around a point what makes a match (3, at least)
 	{
 		int SpriteID = spritesJewels[x,y].GetComponent<tk2dSprite>().spriteId;
 		List<int[]> matchedCoords = new List<int[]>();
