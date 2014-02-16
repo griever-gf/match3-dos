@@ -6,7 +6,10 @@ using System.Linq;
 
 public class JewelData : MonoBehaviour {
 
-	public tk2dTileMap tilemap;
+	//public tk2dTileMap tilemap;
+	//public VirtualTilemap DummyTilemap;
+	public VirtualTilemap DummyTilemap;
+	//private VirtualTilemap DummyTilemap;
 
 	public GameObject prefabJewel;
 	public GameObject prefabBorder;
@@ -27,7 +30,8 @@ public class JewelData : MonoBehaviour {
 	public bool[] BlockedRows, BlockedColumns, BlockedMovements;
 	
 	void Start () {
-		spritesJewels = new GameObject[tilemap.width, tilemap.height];
+		//DummyTilemap = DummyTilemapContainer.GetComponent<VirtualTilemap>();
+		spritesJewels = new GameObject[DummyTilemap.width, DummyTilemap.height];
 		IsFirstJewelInPair = true;
 		IsBusy = false;
 		BlockedRows = new bool[spritesJewels.GetLength(0)];
@@ -38,12 +42,12 @@ public class JewelData : MonoBehaviour {
 	
 	void CreateJewels() //initializing jewel field
 	{
-		Vector3 tilesize = tilemap.data.tileSize;
+		Vector3 tilesize = DummyTilemap.data.tileSize;
 		List<int[]> JewelsForGeneration = new List<int[]>();
 		for (int i = 0; i < spritesJewels.GetLength(0); i++)
 			for (int j = 0; j < spritesJewels.GetLength(1); j++)
 			{
-				spritesJewels[i,j] = Instantiate(prefabJewel, tilemap.GetTilePosition(i,j)+ tilesize*0.5f, transform.rotation) as GameObject;
+				spritesJewels[i,j] = Instantiate(prefabJewel, DummyTilemap.GetTilePosition(i,j)+ tilesize*0.5f, transform.rotation) as GameObject;
 				JewelsForGeneration.Add(new int[]{i, j});
 			}
 		FillRandomJewels(JewelsForGeneration);
@@ -340,17 +344,17 @@ public class JewelData : MonoBehaviour {
 				}
 		
 		//new jewels generation
-		Vector3 tilesize = tilemap.data.tileSize;
+		Vector3 tilesize = DummyTilemap.data.tileSize;
 		foreach (int[] coords in JewelsForGenerate)
 			spritesJewels[coords[0],coords[1]] = Instantiate(prefabJewel,
-			                                                 tilemap.GetTilePosition(coords[0],coords[1])+ tilesize*0.5f+ new Vector3(0,tilesize.y*coords[2]),
+			                                                 DummyTilemap.GetTilePosition(coords[0],coords[1])+ tilesize*0.5f+ new Vector3(0,tilesize.y*coords[2]),
 			                                                 transform.rotation) as GameObject;
 		FillRandomJewels(JewelsForGenerate);
 		
 		//sprites movement
 		List<Vector3> Goals = new List<Vector3>();
 		foreach (int[] coords in JewelsForShift)
-			Goals.Add(tilemap.GetTilePosition(coords[0],coords[1]) + tilesize*0.5f);
+			Goals.Add(DummyTilemap.GetTilePosition(coords[0],coords[1]) + tilesize*0.5f);
 		yield return StartCoroutine(MoveJewels(JewelsForShift, Goals));
 
 		//recursive check after shift
