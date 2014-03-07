@@ -56,13 +56,17 @@ public class JewelData : MonoBehaviour {
 	void FillRandomJewels(List<int[]> Jewels)
 	{
 		System.Random random = new System.Random();
-		int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
+		//int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
+		int SpritesCount = spritesJewels[0,0].GetComponent<VirtualSprite2D>().SpriteImages.Length;
 		do {
 			foreach (int[] coords in Jewels)
 			{
-				do {
-					spritesJewels[coords[0],coords[1]].GetComponent<tk2dSprite>().SetSprite(random.Next(0, SpritesCount));
-				} while (IsMatch3(coords[0], coords[1]));
+				do
+				{
+					//spritesJewels[coords[0],coords[1]].GetComponent<tk2dSprite>().SetSprite(random.Next(0, SpritesCount));
+					spritesJewels[coords[0],coords[1]].GetComponent<VirtualSprite2D>().SetSprite(random.Next(0, SpritesCount));
+				}
+				while (IsMatch3(coords[0], coords[1]));
 			}
 		} while (!IsAnywherePotentialMatch3());
 	}
@@ -75,30 +79,31 @@ public class JewelData : MonoBehaviour {
 
 	bool IsMatch3(int X, int Y)
 	{
-		int SpriteID = spritesJewels[X,Y].GetComponent<tk2dSprite>().spriteId;
+		//int SpriteID = spritesJewels[X,Y].GetComponent<tk2dSprite>().spriteId;
+		int SpriteID = spritesJewels[X,Y].GetComponent<VirtualSprite2D>().spriteId();
 		if (X>=2)
-			if ((spritesJewels[X-1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
-        	    (spritesJewels[X-2,Y].GetComponent<tk2dSprite>().spriteId == SpriteID))
+			if ((spritesJewels[X-1,Y].GetComponent<VirtualSprite2D>().spriteId() == SpriteID)&&
+			    (spritesJewels[X-2,Y].GetComponent<VirtualSprite2D>().spriteId() == SpriteID))
 				return true;
 		if (X<spritesJewels.GetLength(0)-2)
-			if((spritesJewels[X+1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
-               (spritesJewels[X+2,Y].GetComponent<tk2dSprite>().spriteId == SpriteID))
+			if((spritesJewels[X+1,Y].GetComponent<VirtualSprite2D>().spriteId()== SpriteID)&&
+			   (spritesJewels[X+2,Y].GetComponent<VirtualSprite2D>().spriteId() == SpriteID))
 				return true;
 		if (Y>=2)
-			if ((spritesJewels[X,Y-1].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
-        	 	(spritesJewels[X,Y-2].GetComponent<tk2dSprite>().spriteId == SpriteID))
+			if ((spritesJewels[X,Y-1].GetComponent<VirtualSprite2D>().spriteId() == SpriteID)&&
+			    (spritesJewels[X,Y-2].GetComponent<VirtualSprite2D>().spriteId() == SpriteID))
 				return true;
 		if (Y<spritesJewels.GetLength(1)-2)
-			if ((spritesJewels[X,Y+1].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
-      	 		(spritesJewels[X,Y+2].GetComponent<tk2dSprite>().spriteId == SpriteID))
+			if ((spritesJewels[X,Y+1].GetComponent<VirtualSprite2D>().spriteId() == SpriteID)&&
+			    (spritesJewels[X,Y+2].GetComponent<VirtualSprite2D>().spriteId() == SpriteID))
 				return true;
 		if ((X>0)&&(X<spritesJewels.GetLength(0)-1))
-		    if ((spritesJewels[X-1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
-		    	(spritesJewels[X+1,Y].GetComponent<tk2dSprite>().spriteId == SpriteID))
+			if ((spritesJewels[X-1,Y].GetComponent<VirtualSprite2D>().spriteId() == SpriteID)&&
+			    (spritesJewels[X+1,Y].GetComponent<VirtualSprite2D>().spriteId() == SpriteID))
 		    	return true;
 		if ((Y>0)&&(Y<spritesJewels.GetLength(1)-1))
-			if ((spritesJewels[X,Y-1].GetComponent<tk2dSprite>().spriteId == SpriteID)&&
-			    (spritesJewels[X,Y+1].GetComponent<tk2dSprite>().spriteId == SpriteID))
+			if ((spritesJewels[X,Y-1].GetComponent<VirtualSprite2D>().spriteId() == SpriteID)&&
+			    (spritesJewels[X,Y+1].GetComponent<VirtualSprite2D>().spriteId() == SpriteID))
 				return true;
 		return false;
 	}
@@ -109,46 +114,46 @@ public class JewelData : MonoBehaviour {
 		for (int i = 0; i < spritesJewels.GetLength(0); i++)
 			for (int j = 0; j < spritesJewels.GetLength(1); j++)
 			{
-				CurrentSpriteId = spritesJewels[i,j].GetComponent<tk2dSprite>().spriteId;
+			CurrentSpriteId = spritesJewels[i,j].GetComponent<VirtualSprite2D>().spriteId();
 				if ((i > 0)&&(i < spritesJewels.GetLength(0) - 1))
 				{
-					if ( CurrentSpriteId == spritesJewels[i-1,j].GetComponent<tk2dSprite>().spriteId)
+					if ( CurrentSpriteId == spritesJewels[i-1,j].GetComponent<VirtualSprite2D>().spriteId())
 					{
 						if (j > 0)
-							if (CurrentSpriteId == spritesJewels[i+1,j-1].GetComponent<tk2dSprite>().spriteId)
+							if (CurrentSpriteId == spritesJewels[i+1,j-1].GetComponent<VirtualSprite2D>().spriteId())
 								return true;
 						if (j < spritesJewels.GetLength(1) - 1)
-							if (CurrentSpriteId == spritesJewels[i+1,j+1].GetComponent<tk2dSprite>().spriteId)
+							if (CurrentSpriteId == spritesJewels[i+1,j+1].GetComponent<VirtualSprite2D>().spriteId())
 								return true;
 					}
-					if (CurrentSpriteId == spritesJewels[i+1,j].GetComponent<tk2dSprite>().spriteId)
+					if (CurrentSpriteId == spritesJewels[i+1,j].GetComponent<VirtualSprite2D>().spriteId())
 					{
 						if (j > 0)
-							if (CurrentSpriteId == spritesJewels[i-1,j-1].GetComponent<tk2dSprite>().spriteId)
+							if (CurrentSpriteId == spritesJewels[i-1,j-1].GetComponent<VirtualSprite2D>().spriteId())
 								return true;
 						if (j < spritesJewels.GetLength(1) - 1)
-							if (CurrentSpriteId == spritesJewels[i-1,j+1].GetComponent<tk2dSprite>().spriteId)
+							if (CurrentSpriteId == spritesJewels[i-1,j+1].GetComponent<VirtualSprite2D>().spriteId())
 								return true;
 					}
 				}
 				if ((j > 0)&&(j < spritesJewels.GetLength(0) - 1))
 				{
-					if (CurrentSpriteId == spritesJewels[i,j-1].GetComponent<tk2dSprite>().spriteId)
+					if (CurrentSpriteId == spritesJewels[i,j-1].GetComponent<VirtualSprite2D>().spriteId())
 					{
 						if (i > 0)
-							if (CurrentSpriteId == spritesJewels[i-1,j+1].GetComponent<tk2dSprite>().spriteId)
+							if (CurrentSpriteId == spritesJewels[i-1,j+1].GetComponent<VirtualSprite2D>().spriteId())
 								return true;
 						if (i < spritesJewels.GetLength(0) - 1)
-							if (CurrentSpriteId == spritesJewels[i+1,j+1].GetComponent<tk2dSprite>().spriteId)
+							if (CurrentSpriteId == spritesJewels[i+1,j+1].GetComponent<VirtualSprite2D>().spriteId())
 								return true;
 					}
-					if (CurrentSpriteId == spritesJewels[i,j+1].GetComponent<tk2dSprite>().spriteId)
+					if (CurrentSpriteId == spritesJewels[i,j+1].GetComponent<VirtualSprite2D>().spriteId())
 					{
 						if (i > 0)
-							if (CurrentSpriteId == spritesJewels[i-1,j-1].GetComponent<tk2dSprite>().spriteId)
+							if (CurrentSpriteId == spritesJewels[i-1,j-1].GetComponent<VirtualSprite2D>().spriteId())
 								return true;
 						if (i < spritesJewels.GetLength(0) - 1)
-							if (CurrentSpriteId == spritesJewels[i+1,j-1].GetComponent<tk2dSprite>().spriteId)
+							if (CurrentSpriteId == spritesJewels[i+1,j-1].GetComponent<VirtualSprite2D>().spriteId())
 								return true;
 					}
 				}
@@ -364,17 +369,17 @@ public class JewelData : MonoBehaviour {
 	
 	List<int[]> GetMatchedJewels(int x, int y) //Get a list of jewels around a point what makes a match (3, at least)
 	{
-		int SpriteID = spritesJewels[x,y].GetComponent<tk2dSprite>().spriteId;
+		int SpriteID = spritesJewels[x,y].GetComponent<VirtualSprite2D>().spriteId();
 		List<int[]> matchedCoords = new List<int[]>();
 		List<int[]> temp = new List<int[]>();
 		temp.Add(new int[2]{x,y});
 		for (int i = x+1; i < spritesJewels.GetLength(0); i++)
-			if (spritesJewels[i,y].GetComponent<tk2dSprite>().spriteId==SpriteID)
+			if (spritesJewels[i,y].GetComponent<VirtualSprite2D>().spriteId()==SpriteID)
 				temp.Add(new int[2]{i,y});
 		else
 			break;
 		for (int i = x-1; i >= 0; i--)
-			if (spritesJewels[i,y].GetComponent<tk2dSprite>().spriteId==SpriteID)
+			if (spritesJewels[i,y].GetComponent<VirtualSprite2D>().spriteId()==SpriteID)
 				temp.Add(new int[2]{i,y});
 		else
 			break;
@@ -384,12 +389,12 @@ public class JewelData : MonoBehaviour {
 		temp.Clear();
 		
 		for (int j = y+1; j < spritesJewels.GetLength(1); j++)
-			if (spritesJewels[x,j].GetComponent<tk2dSprite>().spriteId==SpriteID)
+			if (spritesJewels[x,j].GetComponent<VirtualSprite2D>().spriteId()==SpriteID)
 				temp.Add(new int[2]{x,j});
 		else
 			break;
 		for (int j = y-1; j >= 0; j--)
-			if (spritesJewels[x,j].GetComponent<tk2dSprite>().spriteId==SpriteID)
+			if (spritesJewels[x,j].GetComponent<VirtualSprite2D>().spriteId()==SpriteID)
 				temp.Add(new int[2]{x,j});
 		else
 			break;

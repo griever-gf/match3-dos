@@ -18,13 +18,7 @@ public class VirtualTilemap : MonoBehaviour {
 	{
 		tileWidth = GetComponent<SpriteRenderer>().renderer.bounds.size.x / width;
 		tileHeight = GetComponent<SpriteRenderer>().renderer.bounds.size.y / height;
-		//tileWidth = tileHeight = 64;
 		data.tileSize = new Vector3(tileWidth, tileHeight);
-	}
-
-	void Start()
-	{
-		//Debug.Log(GetComponent<SpriteRenderer>().renderer.);
 	}
 
 	public Vector3 GetTilePosition(int i, int j)
