@@ -36,7 +36,7 @@ public class JewelData : MonoBehaviour {
 		CreateJewels();
 	}
 	
-	void CreateJewels() //initializing jewel field
+	void CreateJewels() // initializing jewel field
 	{
 		Vector3 tilesize = DummyTilemap.data.tileSize;
 		List<int[]> JewelsForGeneration = new List<int[]>();
