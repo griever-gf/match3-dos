@@ -5,11 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 public class JewelData : MonoBehaviour {
-
-	//public tk2dTileMap tilemap;
-	//public VirtualTilemap DummyTilemap;
+	
 	public VirtualTilemap DummyTilemap;
-	//private VirtualTilemap DummyTilemap;
 
 	public GameObject prefabJewel;
 	public GameObject prefabBorder;
@@ -30,7 +27,6 @@ public class JewelData : MonoBehaviour {
 	public bool[] BlockedRows, BlockedColumns, BlockedMovements;
 	
 	void Start () {
-		//DummyTilemap = DummyTilemapContainer.GetComponent<VirtualTilemap>();
 		spritesJewels = new GameObject[DummyTilemap.width, DummyTilemap.height];
 		IsFirstJewelInPair = true;
 		IsBusy = false;
@@ -56,14 +52,12 @@ public class JewelData : MonoBehaviour {
 	void FillRandomJewels(List<int[]> Jewels)
 	{
 		System.Random random = new System.Random();
-		//int SpritesCount = spritesJewels[0,0].GetComponent<tk2dSprite>().Collection.Count;
 		int SpritesCount = spritesJewels[0,0].GetComponent<VirtualSprite2D>().SpriteImages.Length;
 		do {
 			foreach (int[] coords in Jewels)
 			{
 				do
 				{
-					//spritesJewels[coords[0],coords[1]].GetComponent<tk2dSprite>().SetSprite(random.Next(0, SpritesCount));
 					spritesJewels[coords[0],coords[1]].GetComponent<VirtualSprite2D>().SetSprite(random.Next(0, SpritesCount));
 				}
 				while (IsMatch3(coords[0], coords[1]));
@@ -79,7 +73,6 @@ public class JewelData : MonoBehaviour {
 
 	bool IsMatch3(int X, int Y)
 	{
-		//int SpriteID = spritesJewels[X,Y].GetComponent<tk2dSprite>().spriteId;
 		int SpriteID = spritesJewels[X,Y].GetComponent<VirtualSprite2D>().spriteId();
 		if (X>=2)
 			if ((spritesJewels[X-1,Y].GetComponent<VirtualSprite2D>().spriteId() == SpriteID)&&
