@@ -15,7 +15,7 @@ public class JewelData : MonoBehaviour {
 	private GameObject Border;
 
 	int SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX, PreviousSpriteIndexY;
-	bool IsFirstJewelInPair;
+	bool IsLastSelectedJewelBlocked;
 	bool IsBusy;
 
 	public AudioClip clipMove;
@@ -28,7 +28,7 @@ public class JewelData : MonoBehaviour {
 	
 	void Start () {
 		spritesJewels = new GameObject[DummyTilemap.width, DummyTilemap.height];
-		IsFirstJewelInPair = true;
+		//IsFirstJewelInPair = true;
 		IsBusy = false;
 		BlockedRows = new bool[spritesJewels.GetLength(0)];
 		BlockedColumns = new bool[spritesJewels.GetLength(1)];
@@ -158,53 +158,112 @@ public class JewelData : MonoBehaviour {
 	{
 		if (!IsBusy)
 		{
-			SelectedSpriteIndexX = SelectedSpriteIndexY = -10;
+			SelectedSpriteIndexX = SelectedSpriteIndexY = -100;
 			for (int i = 0; i < spritesJewels.GetLength(0); i++)
 				for (int j = 0; j < spritesJewels.GetLength(1); j++)
 					if (go.Equals(spritesJewels[i, j]))
 					{
+						IsLastSelectedJewelBlocked = true;
 						if (BlockedColumns[i]||BlockedRows[j]) //checking for blocked rows / columns
 							return;
-						if (!IsFirstJewelInPair) //checking for blocked movements
-						{
-							if (BlockedMovements[0]) //if left is blocked
-								if ((i-PreviousSpriteIndexX==-1)&&(j==PreviousSpriteIndexY))
-							    	return;
-							if (BlockedMovements[1]) //if right is blocked
-								if ((i-PreviousSpriteIndexX==1)&&(j==PreviousSpriteIndexY))
-									return;
-							if (BlockedMovements[2]) //if up is blocked
-								if ((j-PreviousSpriteIndexY==1)&&(i==PreviousSpriteIndexX))
-									return;
-							if (BlockedMovements[3]) //if down is blocked
-								if ((j-PreviousSpriteIndexY==-1)&&(i==PreviousSpriteIndexX))
-									return;
-						}
+						if (BlockedMovements[0]) //if left is blocked
+							if ((i-PreviousSpriteIndexX==-1)&&(j==PreviousSpriteIndexY))
+						    	return;
+						if (BlockedMovements[1]) //if right is blocked
+							if ((i-PreviousSpriteIndexX==1)&&(j==PreviousSpriteIndexY))
+								return;
+						if (BlockedMovements[2]) //if up is blocked
+							if ((j-PreviousSpriteIndexY==1)&&(i==PreviousSpriteIndexX))
+								return;
+						if (BlockedMovements[3]) //if down is blocked
+							if ((j-PreviousSpriteIndexY==-1)&&(i==PreviousSpriteIndexX))
+								return;
+						IsLastSelectedJewelBlocked = false;
 						SelectedSpriteIndexX = i;
 						SelectedSpriteIndexY = j;
 						i = spritesJewels.GetLength(0);
 						break;
-					}
-			
+					}		
 			if (Border != null) Destroy(Border);
-			if (IsFirstJewelInPair)
+
+			if (IsNeighbors(SelectedSpriteIndexX, SelectedSpriteIndexY))
 			{
-				Border = Instantiate(prefabBorder, go.transform.position, go.transform.rotation) as GameObject;
+				StartCoroutine(TryToMatch(SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX,PreviousSpriteIndexY));
 			}
 			else
 			{
-				if (IsNeighbors(SelectedSpriteIndexX, SelectedSpriteIndexY))
-					StartCoroutine(TryToMatch(SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX,PreviousSpriteIndexY));
+				PreviousSpriteIndexX = SelectedSpriteIndexX;
+				PreviousSpriteIndexY = SelectedSpriteIndexY;
+				Border = Instantiate(prefabBorder, go.transform.position, go.transform.rotation) as GameObject;
 			}
-			IsFirstJewelInPair = !IsFirstJewelInPair;
-			PreviousSpriteIndexX = SelectedSpriteIndexX;
-			PreviousSpriteIndexY = SelectedSpriteIndexY;
+		}
+	}
+
+	public void MoveJewelBySwipe(GameObject go, Vector2 direction)
+	{
+		if ((!IsBusy)&&(!IsLastSelectedJewelBlocked))
+		{
+			if (Math.Abs(direction.x)>Math.Abs(direction.y)) //if horizontal swipe
+			{
+				if (direction.x > 0) //if right
+				{
+					if (BlockedMovements[1]) return;
+					if (PreviousSpriteIndexX+1< spritesJewels.GetLength(0))
+					{
+						if (BlockedColumns[PreviousSpriteIndexX+1]) return;
+						SelectedSpriteIndexX = PreviousSpriteIndexX + 1;
+					}
+					else
+						return;
+				}
+				else //if left
+				{
+					if (BlockedMovements[0]) return;
+					if (PreviousSpriteIndexX-1 >= 0)
+					{
+						if (BlockedColumns[PreviousSpriteIndexX-1]) return;
+						SelectedSpriteIndexX = PreviousSpriteIndexX - 1;
+					}
+					else
+						return;
+				}
+				SelectedSpriteIndexY = PreviousSpriteIndexY;
+			}
+			else //if vertical
+			{
+				if (direction.y > 0) //if up
+				{
+					if (BlockedMovements[2]) return;
+					if (PreviousSpriteIndexY+1< spritesJewels.GetLength(1))
+					{
+						if (BlockedRows[PreviousSpriteIndexY+1]) return;
+						SelectedSpriteIndexY = PreviousSpriteIndexY + 1;
+					}
+					else
+						return;
+				}
+				else //if down
+				{
+					if (BlockedMovements[3]) return;
+					if (PreviousSpriteIndexY-1 >= 0)
+					{
+						if (BlockedRows[PreviousSpriteIndexY-1]) return;
+						SelectedSpriteIndexY = PreviousSpriteIndexY - 1;
+					}
+					else
+						return;
+				}
+				SelectedSpriteIndexX = PreviousSpriteIndexX;
+			}
+			if (Border != null) Destroy(Border);
+			StartCoroutine(TryToMatch(SelectedSpriteIndexX, SelectedSpriteIndexY, PreviousSpriteIndexX,PreviousSpriteIndexY));
 		}
 	}
 	
 	IEnumerator TryToMatch(int x1, int y1, int x2, int y2) //execute the swap, then process if matches and swap back if not
 	{
 		IsBusy = true;
+		PreviousSpriteIndexX = PreviousSpriteIndexY = -100;
 		audio.PlayOneShot(clipMove);
 		yield return StartCoroutine(SwapJewels(x1, y1, x2, y2)); //wait unitil swap
 

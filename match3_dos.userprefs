@@ -1,8 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\ScreenInput.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/scripts/JewelData.cs">
     <Files>
-      <File FileName="Assets\scripts\ScreenInput.cs" Line="15" Column="15" />
+      <File FileName="Assets/scripts/ScreenInput.cs" Line="41" Column="4" />
+      <File FileName="Assets/scripts/JewelData.cs" Line="204" Column="48" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
