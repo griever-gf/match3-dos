@@ -9,11 +9,16 @@ public class ScreenInput : MonoBehaviour {
 		//touch input
 		if(Input.touchCount > 0)
 		{
-			foreach (Touch touch in Input.touches)
-				if(touch.phase == TouchPhase.Began)
+			if ((Input.GetTouch(0).phase == TouchPhase.Began)||(Input.GetTouch(0).phase == TouchPhase.Stationary))
+				if (Time.time > lastClickTime + 0.5f)
 				{
-					ProcessScreenContact(touch.position);
+					ProcessScreenContact(Input.GetTouch(0).position);
+					lastClickTime = Time.time;
 				}
+			if (Input.GetTouch(0).phase == TouchPhase.Ended)
+			{
+				
+			}
 		}
 		//mouse input
 		if (Input.GetKey(KeyCode.Mouse0))

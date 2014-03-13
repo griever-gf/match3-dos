@@ -1,9 +1,8 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\JewelData.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\ScreenInput.cs">
     <Files>
-      <File FileName="Assets\scripts\JewelData.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\VirtualSprite2D.cs" Line="1" Column="1" />
+      <File FileName="Assets\scripts\ScreenInput.cs" Line="15" Column="15" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
